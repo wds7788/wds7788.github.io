@@ -3,11 +3,11 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: Hexo
-subtitle: ''
-description: ''
+title: wds博客
+subtitle: 'wds吴多盛博客'
+description: 'wds吴多盛博客'
 keywords:
-author: John Doe
+author: wds
 language: en
 timezone: ''
 
@@ -102,5 +102,5 @@ theme: next
 ## Docs: https://hexo.io/docs/one-command-deployment
 deploy:
   type: git
-  repo: https://github.com/pasawu/pasawu.github.io.git
+  repo: https://github.com/wds7788/wds7788.github.io
   branch: master
