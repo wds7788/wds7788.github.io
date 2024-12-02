@@ -6,14 +6,13 @@ title: Github Pages 和 Hexo 搭建博客
 
 1. 访问：[https://github.com/new](https://github.com/new)
 2. 创建仓库，名称写 `xxx.github.io`。
-3. 在 GitHub Pages 中找到我们主页的地址为 `https://xxx.github.io/`。
 
 ---
 
 ## 环境配置
 
 ### 1. 下载安装 Git 环境
-设置 GitHub 和 SSH Key。
+设置 GitHub SSH Key。
 
 ### 2. 搭建 Node.js 环境
 推荐使用 nvm：[文章链接](https://cloud.tencent.com/developer/article/1812323)。
@@ -104,7 +103,7 @@ npm install hexo-deployer-git --save
 deploy:
   type: git
   repo: https://github.com/YourgithubName/YourgithubName.github.io.git
-  branch: master
+  branch: pages
 ```
 
 ### 3. 部署博客
@@ -113,5 +112,11 @@ hexo clean       # 清除之前生成的内容
 hexo generate    # 生成静态文章，缩写 hexo g
 hexo deploy      # 部署文章，缩写 hexo d
 ```
+
+### 4. 设置GitHub Pages
+
+在 GitHub 仓库Settings Pages Source 为 Deploy from a branch ，Branch选择pages分支，点击保存save
+
+---
 
 现在，你可以在 [http://xxx.github.io](http://xxx.github.io) 看到你的博客了！
