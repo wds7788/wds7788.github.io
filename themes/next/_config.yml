@@ -137,10 +137,9 @@ scheme: Muse
   #Skype: skype:yourname?call|chat || skype
 
 social:
-  GitHub: https://github.com/wds7788
+  GitHub: https://github.com/wds7788 || fab fa-github
 
 social_icons:
-  GitHub: false
   enable: true
   icons_only: false
   transition: false
