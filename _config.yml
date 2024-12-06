@@ -3,13 +3,13 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: wds博客
-subtitle: 'wds吴多盛博客'
-description: 'wds吴多盛博客'
+title: wds
+subtitle: 'wds博客'
+description: 'wds博客'
 keywords:
 author: wds
-language: zh-Hans
-timezone: ''
+language: zh-CN
+timezone: 'Asia/Shanghai'
 
 # URL
 ## Set your site url here. For example, if you use GitHub Page, set url as 'https://username.github.io/project'

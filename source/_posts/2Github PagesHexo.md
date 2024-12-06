@@ -26,6 +26,11 @@ title: Github Pages 和 Hexo 搭建博客
 npm install -g hexo-cli
 ```
 
+如果进度条长时间没有变化,切换到淘宝 NPM 镜像：
+```bash
+npm config set registry https://registry.npmmirror.com
+```
+
 ### 2. 初始化 Hexo 框架
 ```bash
 hexo init blog
