@@ -120,7 +120,7 @@
 ]]></content>
   </entry>
   <entry>
-    <title>手动编译安装Swoole扩展并启用原生CURL支持</title>
+    <title>手动编译安装Swoole扩展</title>
     <url>/2025/04/20/install_swoole_extension/</url>
     <content><![CDATA[<h3 id="swoole-curl-setopt-option-10100-is-not-supported解决"><a href="#swoole-curl-setopt-option-10100-is-not-supported解决" class="headerlink" title="swoole_curl_setopt(): option[10100] is not supported解决"></a>swoole_curl_setopt(): option[10100] is not supported解决</h3><h3 id="安装-Swoole-扩展并启用-CURL-支持"><a href="#安装-Swoole-扩展并启用-CURL-支持" class="headerlink" title="安装 Swoole 扩展并启用 CURL 支持"></a>安装 Swoole 扩展并启用 CURL 支持</h3><p>在宝塔面板中，PHP 通常位于 <code>/www/server/php/你的PHP版本/bin</code> 目录下，例如 <code>/www/server/php/82/bin/phpize</code>。你需要根据你安装的 PHP 版本调整命令。</p>
 <h4 id="1-下载-Swoole-源码"><a href="#1-下载-Swoole-源码" class="headerlink" title="1. 下载 Swoole 源码"></a>1. <strong>下载 Swoole 源码</strong></h4><p>从 <a href="https://github.com/swoole/swoole-src/releases">Swoole GitHub</a> 下载最新的源码包。选择 <code>Source code(tar.gz)</code> 格式的文件进行下载。</p>
