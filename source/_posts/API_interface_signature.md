@@ -2,6 +2,7 @@
 title: API 接口签名验证机制
 date: 2025-5-24 08:35:14
 updated: 2025-5-24 08:35:14
+description: 接口签名验证机制详解（含 JS + PHP 示例）
 ---
 
 
@@ -95,7 +96,7 @@ signature示例: c8313008af78b064d700de24c5d15cee2ab6a14e6f506930656faa73668419f
         appId: "appId",
         secretKey: "secretKey",
         version: "1.0.0",
-        apiUrl: "https://www.google.com/api/v1/test/test"
+        apiUrl: "https://wds7788.github.io/api/v1/test/test"
     };
 
     function generateSignature(config, data) {
@@ -145,23 +146,14 @@ signature示例: c8313008af78b064d700de24c5d15cee2ab6a14e6f506930656faa73668419f
     }
 
     function generateUniqueId() {
-        // 高性能时间戳+计数器（推荐用于高频调用）
-        if (!this.lastTimestamp) {
-            this.lastTimestamp = Date.now();
-            this.counter = 0;
+        var length = 12;
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let result = '';
+        const charactersLength = characters.length;
+        for (let i = 0; i < length; i++) {
+            result += characters.charAt(Math.floor(Math.random() * charactersLength));
         }
-
-        const now = Date.now();
-        if (now === this.lastTimestamp) {
-            this.counter = (this.counter + 1) & 0xFFF; // 12位计数器，避免溢出
-        } else {
-            this.counter = 0;
-            this.lastTimestamp = now;
-        }
-
-        // 组合：时间戳(41位) + 计数器(12位) + 随机数(11位) = 64位
-        const random = Math.floor(Math.random() * 2048); // 11位随机数
-        return `${now}${this.counter.toString(16).padStart(3, '0')}${random.toString(16).padStart(3, '0')}`;
+        return result;
     }
 
     function jsonSafeReplacer(key, value) {
