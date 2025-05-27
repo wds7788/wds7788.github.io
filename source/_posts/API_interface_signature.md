@@ -1,7 +1,7 @@
 ---
 title: API 接口签名验证机制
 date: 2025-5-24 08:35:14
-updated: 2025-5-24 08:35:14
+updated: 2025-5-27 10:50:14
 description: 接口签名验证机制详解（含 JS + PHP 示例）
 ---
 
@@ -250,6 +250,12 @@ class Signature
         //     throw new \Exception('Duplicate request', 401);
         // }
         //Cache::set('api_nonce:'.$nonce, 1, $this->expireTime);
+
+        
+        if (empty($body)) {
+            $body = "{}";
+        }
+
 
         // 生成服务端签名
         $serverSign = $this->generateSign([
