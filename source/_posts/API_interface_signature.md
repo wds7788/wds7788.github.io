@@ -1,7 +1,7 @@
 ---
 title: API 接口签名验证机制
 date: 2025-5-24 08:35:14
-updated: 2025-5-27 10:50:14
+updated: 2025-5-27 11:20:30
 description: 接口签名验证机制详解（含 JS + PHP 示例）
 ---
 
@@ -53,7 +53,7 @@ nonce=abc123
 body={"userId":123,"action":"testAction"}
 secretKey=secretKey
 
-注意：secretKey不参与加签
+注意：body如果为空就赋值"{}",body={}
 
 将请求体（如 JSON）序列化为字符串，忽略undefined、function等非法类型
 
