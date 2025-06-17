@@ -1,5 +1,5 @@
 ---
-title: 手动编译安装Swoole扩展
+title: ThinkPHP 8.1 + think-swoole 4.1 的 WebSocket 实时通信
 date: 2025-6-6 23:49:18
 updated: 2025-6-6 23:49:18
 description: 'ThinkPHP 8.1 框架和 think-swoole 4.1 扩展，完整配置 WebSocket 服务端 + 客户端 HTML 页面 Demo'
