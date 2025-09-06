@@ -1,7 +1,7 @@
 ---
 title: 手动编译安装Swoole扩展
 date: 2025-4-20 12:41:53
-updated: 2025-4-20 12:41:53
+updated: 2025-9-6 11:22:09
 description: '手动编译安装Swoole扩展并启用原生CURL支持，swoole_curl_setopt(): option[10100] is not supported解决'
 ---
 ### swoole_curl_setopt(): option[10100] is not supported解决
@@ -55,7 +55,8 @@ cd swoole-src-6.0.2
 执行 `configure` 命令时，加入 `--enable-swoole-curl` 参数来启用原生的 CURL 支持。并通过 `--with-php-config` 指定 PHP 配置工具的路径。执行以下命令：
 
 ```bash
-./configure --enable-swoole-curl --with-php-config=/www/server/php/82/bin/php-config
+./configure --enable-swoole-curl --enable-openssl --with-php-config=/www/server/php/82/bin/php-config
+  make && make install
 ```
 
 > **原理**：`--enable-swoole-curl` 参数启用了 Swoole 扩展中的 CURL 支持，`--with-php-config` 则指定了 PHP 配置工具的路径，确保编译过程中 PHP 的正确配置,通过configure脚本生成Makefile，参数决定扩展功能和依赖库绑定方式。使用系统CURL可避免自研实现的兼容性问题。
@@ -70,11 +71,22 @@ make && make install
 
 > **原理**：`make` 会编译 Swoole 扩展，`make install` 会将编译好的扩展安装到 PHP 扩展目录中。如果编译顺利，你会看到类似以下的输出，表示安装成功。
 
+如果编译时提示缺少 OpenSSL 开发库，需要先安装：
+
+CentOS/RHEL:
+```bash
+yum install openssl-devel
+```
+
+Ubuntu/Debian:
+```bash
+apt-get install libssl-dev
+```
+
 在 `/www/server/php/82/lib/php/extensions/no-debug-non-zts-20220829` 目录下，你会看到 `swoole.so` 文件：
 
 ```bash
 cd /www/server/php/82/lib/php/extensions/no-debug-non-zts-20220829
-ls
 ```
 
 ```bash
@@ -108,8 +120,15 @@ service php-fpm restart
 ```bash
 php -m | grep swoole
 ```
-
 如果输出 `swoole`，说明安装成功。
+
+
+验证是否成功启用 OpenSSL：
+```bash
+php --ri swoole | grep openssl
+```
+
+应该能看到 openssl support => enabled 的输出。
 
 ---
 
