@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="接口签名验证机制详解（含 JS + PHP 示例）">
+<meta property="og:type" content="article">
+<meta property="og:title" content="API 接口签名验证机制">
+<meta property="og:url" content="http://example.com/2025/05/24/API_interface_signature/index.html">
+<meta property="og:site_name" content="wds">
+<meta property="og:description" content="接口签名验证机制详解（含 JS + PHP 示例）">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-05-24T00:35:14.000Z">
+<meta property="article:modified_time" content="2025-05-27T03:20:30.000Z">
+<meta property="article:author" content="wds">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2025/05/24/API_interface_signature/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>API 接口签名验证机制 | wds</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">wds</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">wds博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/wds7788" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2025/05/24/API_interface_signature/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="wds">
+      <meta itemprop="description" content="wds博客">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="wds">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          API 接口签名验证机制
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2025-05-24 08:35:14" itemprop="dateCreated datePublished" datetime="2025-05-24T08:35:14+08:00">2025-05-24</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2025-05-27 11:20:30" itemprop="dateModified" datetime="2025-05-27T11:20:30+08:00">2025-05-27</time>
+              </span>
+
+          
+            <div class="post-description">接口签名验证机制详解（含 JS + PHP 示例）</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="✨-一、什么是-API-接口签名验证？"><a href="#✨-一、什么是-API-接口签名验证？" class="headerlink" title="✨ 一、什么是 API 接口签名验证？"></a>✨ 一、什么是 API 接口签名验证？</h2><p>API 签名是一种保障接口安全性的机制。其核心目的是：</p>
+<ul>
+<li>防篡改<strong>确保请求内容未被第三方修改</strong></li>
+<li>防伪造<strong>验证请求来源合法性</strong></li>
+<li>时效性<strong>防止历史请求重复提交</strong></li>
+<li>完整性<strong>保证传输过程数据完整</strong></li>
+</ul>
+<p>签名的基本原理是：客户端将约定参数+请求体 + 密钥做加密签名，服务器根据相同逻辑重新生成签名进行比对，从而校验请求合法性。</p>
+<hr>
+<h2 id="📐-二、签名参数设计"><a href="#📐-二、签名参数设计" class="headerlink" title="📐 二、签名参数设计"></a>📐 二、签名参数设计</h2><p>一般包括以下几个字段：</p>
+<table>
+<thead>
+<tr>
+<th>参数名</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>X-App-Id</code></td>
+<td>应用标识（客户端ID）</td>
+</tr>
+<tr>
+<td><code>X-Version</code></td>
+<td>API版本号</td>
+</tr>
+<tr>
+<td><code>X-Timestamp</code></td>
+<td>请求时间戳（单位秒）</td>
+</tr>
+<tr>
+<td><code>X-Nonce</code></td>
+<td>随机字符串（防重放）</td>
+</tr>
+<tr>
+<td><code>X-Signature</code></td>
+<td>签名值（HMAC-SHA256生成）</td>
+</tr>
+</tbody></table>
+<p>请求体（body）也会作为签名的一部分参与计算。</p>
+<h3 id="签名生成步骤"><a href="#签名生成步骤" class="headerlink" title="签名生成步骤"></a>签名生成步骤</h3><ol>
+<li><strong>参数收集</strong>: 收集所有参与签名的参数</li>
+<li><strong>参数排序</strong>: 按参数名进行字典序排列</li>
+<li><strong>字符串拼接</strong>: 按<code>key=value&amp;</code>格式拼接</li>
+<li><strong>HMAC签名</strong>: 使用HMAC-SHA256算法计算签名</li>
+</ol>
+<h3 id="算法示例"><a href="#算法示例" class="headerlink" title="算法示例"></a>算法示例</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">原始参数：</span><br><span class="line">appid=appId</span><br><span class="line">version=1.0.0</span><br><span class="line">timestamp=1716456789</span><br><span class="line">nonce=abc123</span><br><span class="line">body=&#123;&quot;userId&quot;:123,&quot;action&quot;:&quot;testAction&quot;&#125;</span><br><span class="line">secretKey=secretKey</span><br><span class="line"></span><br><span class="line">注意：body如果为空就赋值&quot;&#123;&#125;&quot;,body=&#123;&#125;</span><br><span class="line"></span><br><span class="line">将请求体（如 JSON）序列化为字符串，忽略undefined、function等非法类型</span><br><span class="line"></span><br><span class="line">按参数名字母序排序（如appid→body→nonce→timestamp→version）</span><br><span class="line"></span><br><span class="line">生成签名字符串</span><br><span class="line"></span><br><span class="line">拼接为key1=value1&amp;key2=value2&amp;...格式</span><br><span class="line"></span><br><span class="line">排序后拼接：</span><br><span class="line">appid=appId&amp;body=&#123;&quot;userId&quot;:123,&quot;action&quot;:&quot;testAction&quot;&#125;&amp;nonce=abc123&amp;timestamp=1716456789&amp;version=1.0.0</span><br><span class="line"></span><br><span class="line">HMAC-SHA256签名：</span><br><span class="line">signature = HMAC-SHA256(拼接字符串, secretKey)</span><br><span class="line"></span><br><span class="line">signature示例: c8313008af78b064d700de24c5d15cee2ab6a14e6f506930656faa73668419f4</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🔐-三、代码示例"><a href="#🔐-三、代码示例" class="headerlink" title="🔐 三、代码示例"></a>🔐 三、代码示例</h2><h3 id="前端加签逻辑（JavaScript）"><a href="#前端加签逻辑（JavaScript）" class="headerlink" title="前端加签逻辑（JavaScript）"></a>前端加签逻辑（JavaScript）</h3><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!DOCTYPE <span class="keyword">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">title</span>&gt;</span>签名测试<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">&quot;https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">&quot;https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">button</span> <span class="attr">onclick</span>=<span class="string">&quot;sendRequest()&quot;</span>&gt;</span>发送请求<span class="tag">&lt;/<span class="name">button</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">    <span class="keyword">const</span> config = &#123;</span></span><br><span class="line"><span class="language-javascript">        <span class="attr">appId</span>: <span class="string">&quot;appId&quot;</span>,</span></span><br><span class="line"><span class="language-javascript">        <span class="attr">secretKey</span>: <span class="string">&quot;secretKey&quot;</span>,</span></span><br><span class="line"><span class="language-javascript">        <span class="attr">version</span>: <span class="string">&quot;1.0.0&quot;</span>,</span></span><br><span class="line"><span class="language-javascript">        <span class="attr">apiUrl</span>: <span class="string">&quot;https://wds7788.github.io/api/v1/test/test&quot;</span></span></span><br><span class="line"><span class="language-javascript">    &#125;;</span></span><br><span class="line"><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">    <span class="keyword">function</span> <span class="title function_">generateSignature</span>(<span class="params">config, data</span>) &#123;</span></span><br><span class="line"><span class="language-javascript">        <span class="keyword">const</span> timestamp = <span class="title class_">Math</span>.<span class="title function_">floor</span>(<span class="title class_">Date</span>.<span class="title function_">now</span>() / <span class="number">1000</span>);</span></span><br><span class="line"><span class="language-javascript">        <span class="keyword">const</span> nonce = <span class="title function_">generateUniqueId</span>();</span></span><br><span class="line"><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">        <span class="comment">// 保持原始JSON顺序</span></span></span><br><span class="line"><span class="language-javascript">        <span class="keyword">const</span> bodyStr = data ? <span class="title class_">JSON</span>.<span class="title function_">stringify</span>(data, jsonSafeReplacer) : <span class="string">&#x27;&#x27;</span>;</span></span><br><span class="line"><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">        <span class="keyword">const</span> signParams = &#123;</span></span><br><span class="line"><span class="language-javascript">            <span class="attr">appid</span>: config.<span class="property">appId</span>,</span></span><br><span class="line"><span class="language-javascript">            <span class="attr">version</span>: config.<span class="property">version</span>,</span></span><br><span class="line"><span class="language-javascript">            <span class="attr">timestamp</span>: timestamp,</span></span><br><span class="line"><span class="language-javascript">            <span class="attr">nonce</span>: nonce,</span></span><br><span class="line"><span class="language-javascript">            <span class="attr">body</span>: bodyStr</span></span><br><span class="line"><span class="language-javascript">        &#125;;</span></span><br><span class="line"><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">        <span class="comment">// 调试输出（完成后可移除）</span></span></span><br><span class="line"><span class="language-javascript">        <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;参与签名参数:&#x27;</span>, <span class="title class_">JSON</span>.<span class="title function_">stringify</span>(signParams, <span class="literal">null</span>, <span class="number">2</span>));</span></span><br><span class="line"><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">        <span class="keyword">const</span> sortedParams = <span class="title class_">Object</span>.<span class="title function_">keys</span>(signParams)</span></span><br><span class="line"><span class="language-javascript">            .<span class="title function_">sort</span>()</span></span><br><span class="line"><span class="language-javascript">            .<span class="title function_">map</span>(<span class="function"><span class="params">key</span> =&gt;</span> <span class="string">`<span class="subst">$&#123;key&#125;</span>=<span class="subst">$&#123;signParams[key]&#125;</span>`</span>)</span></span><br><span class="line"><span class="language-javascript">            .<span class="title function_">join</span>(<span class="string">&#x27;&amp;&#x27;</span>);</span></span><br><span class="line"><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">        <span class="comment">// 调试输出</span></span></span><br><span class="line"><span class="language-javascript">        <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;签名字符串:&#x27;</span>, sortedParams);</span></span><br><span class="line"><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">        <span class="keyword">const</span> signature = <span class="title class_">CryptoJS</span>.<span class="title class_">HmacSHA256</span>(</span></span><br><span class="line"><span class="language-javascript">            sortedParams,</span></span><br><span class="line"><span class="language-javascript">            config.<span class="property">secretKey</span></span></span><br><span class="line"><span class="language-javascript">        ).<span class="title function_">toString</span>(<span class="title class_">CryptoJS</span>.<span class="property">enc</span>.<span class="property">Hex</span>);</span></span><br><span class="line"><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">        <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;signature:&#x27;</span>, signature);</span></span><br><span class="line"><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">        <span class="keyword">return</span> &#123;</span></span><br><span class="line"><span class="language-javascript">            <span class="attr">headers</span>: &#123;</span></span><br><span class="line"><span class="language-javascript">                <span class="string">&#x27;X-App-Id&#x27;</span>: config.<span class="property">appId</span>,</span></span><br><span class="line"><span class="language-javascript">                <span class="string">&#x27;X-Version&#x27;</span>: config.<span class="property">version</span>,</span></span><br><span class="line"><span class="language-javascript">                <span class="string">&#x27;X-Timestamp&#x27;</span>: timestamp,</span></span><br><span class="line"><span class="language-javascript">                <span class="string">&#x27;X-Nonce&#x27;</span>: nonce,</span></span><br><span class="line"><span class="language-javascript">                <span class="string">&#x27;X-Signature&#x27;</span>: signature</span></span><br><span class="line"><span class="language-javascript">            &#125;,</span></span><br><span class="line"><span class="language-javascript">            <span class="attr">body</span>: bodyStr</span></span><br><span class="line"><span class="language-javascript">        &#125;;</span></span><br><span class="line"><span class="language-javascript">    &#125;</span></span><br><span class="line"><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">    <span class="keyword">function</span> <span class="title function_">generateUniqueId</span>(<span class="params"></span>) &#123;</span></span><br><span class="line"><span class="language-javascript">        <span class="keyword">var</span> length = <span class="number">12</span>;</span></span><br><span class="line"><span class="language-javascript">        <span class="keyword">const</span> characters = <span class="string">&#x27;ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789&#x27;</span>;</span></span><br><span class="line"><span class="language-javascript">        <span class="keyword">let</span> result = <span class="string">&#x27;&#x27;</span>;</span></span><br><span class="line"><span class="language-javascript">        <span class="keyword">const</span> charactersLength = characters.<span class="property">length</span>;</span></span><br><span class="line"><span class="language-javascript">        <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; length; i++) &#123;</span></span><br><span class="line"><span class="language-javascript">            result += characters.<span class="title function_">charAt</span>(<span class="title class_">Math</span>.<span class="title function_">floor</span>(<span class="title class_">Math</span>.<span class="title function_">random</span>() * charactersLength));</span></span><br><span class="line"><span class="language-javascript">        &#125;</span></span><br><span class="line"><span class="language-javascript">        <span class="keyword">return</span> result;</span></span><br><span class="line"><span class="language-javascript">    &#125;</span></span><br><span class="line"><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">    <span class="keyword">function</span> <span class="title function_">jsonSafeReplacer</span>(<span class="params">key, value</span>) &#123;</span></span><br><span class="line"><span class="language-javascript">        <span class="keyword">if</span> (<span class="keyword">typeof</span> value === <span class="string">&#x27;bigint&#x27;</span>) &#123;</span></span><br><span class="line"><span class="language-javascript">            <span class="keyword">return</span> value.<span class="title function_">toString</span>(); <span class="comment">// BigInt 转为字符串</span></span></span><br><span class="line"><span class="language-javascript">        &#125;</span></span><br><span class="line"><span class="language-javascript">        <span class="keyword">if</span> (<span class="keyword">typeof</span> value === <span class="string">&#x27;symbol&#x27;</span> || <span class="keyword">typeof</span> value === <span class="string">&#x27;function&#x27;</span> || <span class="keyword">typeof</span> value === <span class="string">&#x27;undefined&#x27;</span>) &#123;</span></span><br><span class="line"><span class="language-javascript">            <span class="keyword">return</span> <span class="literal">undefined</span>; <span class="comment">// 忽略 Symbol、Function、undefined</span></span></span><br><span class="line"><span class="language-javascript">        &#125;</span></span><br><span class="line"><span class="language-javascript">        <span class="keyword">return</span> value;</span></span><br><span class="line"><span class="language-javascript">    &#125;</span></span><br><span class="line"><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">    <span class="keyword">async</span> <span class="keyword">function</span> <span class="title function_">sendRequest</span>(<span class="params"></span>) &#123;</span></span><br><span class="line"><span class="language-javascript">        <span class="keyword">try</span> &#123;</span></span><br><span class="line"><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">            <span class="keyword">const</span> requestData = &#123;</span></span><br><span class="line"><span class="language-javascript">                <span class="attr">userId</span>: <span class="number">123</span>,</span></span><br><span class="line"><span class="language-javascript">                <span class="attr">action</span>: <span class="string">&#x27;testAction&#x27;</span></span></span><br><span class="line"><span class="language-javascript">            &#125;;</span></span><br><span class="line"><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">            <span class="keyword">const</span> &#123;headers, body&#125; = <span class="title function_">generateSignature</span>(config, requestData);</span></span><br><span class="line"><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">            <span class="comment">// 调试输出</span></span></span><br><span class="line"><span class="language-javascript">            <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;最终请求头:&#x27;</span>, headers);</span></span><br><span class="line"><span class="language-javascript">            <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;请求体:&#x27;</span>, body);</span></span><br><span class="line"><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">            <span class="keyword">const</span> response = <span class="keyword">await</span> axios.<span class="title function_">post</span>(config.<span class="property">apiUrl</span>, body, &#123;</span></span><br><span class="line"><span class="language-javascript">                <span class="attr">headers</span>: &#123;</span></span><br><span class="line"><span class="language-javascript">                    ...headers,</span></span><br><span class="line"><span class="language-javascript">                    <span class="string">&#x27;Content-Type&#x27;</span>: <span class="string">&#x27;application/json&#x27;</span></span></span><br><span class="line"><span class="language-javascript">                &#125;</span></span><br><span class="line"><span class="language-javascript">            &#125;);</span></span><br><span class="line"><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">            <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;请求成功:&#x27;</span>, response.<span class="property">data</span>);</span></span><br><span class="line"><span class="language-javascript">        &#125; <span class="keyword">catch</span> (error) &#123;</span></span><br><span class="line"><span class="language-javascript">            <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;请求失败:&#x27;</span>, error);</span></span><br><span class="line"><span class="language-javascript">        &#125;</span></span><br><span class="line"><span class="language-javascript">    &#125;</span></span><br><span class="line"><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">    <span class="title function_">sendRequest</span>();</span></span><br><span class="line"><span class="language-javascript"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="后端验签逻辑（PHP）"><a href="#后端验签逻辑（PHP）" class="headerlink" title="后端验签逻辑（PHP）"></a>后端验签逻辑（PHP）</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Created by PhpStorm.</span></span><br><span class="line"><span class="comment"> * User: wds</span></span><br><span class="line"><span class="comment"> * Date: 2025/5/23</span></span><br><span class="line"><span class="comment"> * Time: 16:33</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title class_">utils</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Signature</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$expireTime</span> = <span class="number">600</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$appId</span>      = <span class="string">&quot;appId&quot;</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$secretKey</span>  = <span class="string">&quot;secretKey&quot;</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$success</span>    = <span class="number">200</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$error</span>      = <span class="number">400</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//检验sign是否正确</span></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">verifySign</span>(<span class="params"><span class="keyword">array</span> <span class="variable">$header</span>, <span class="keyword">string</span> <span class="variable">$body</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// 获取请求头参数</span></span><br><span class="line">        <span class="variable">$appid</span>     = <span class="variable">$header</span>[<span class="string">&#x27;X-App-Id&#x27;</span>] ?? <span class="string">&#x27;&#x27;</span>;</span><br><span class="line">        <span class="variable">$version</span>   = <span class="variable">$header</span>[<span class="string">&#x27;X-Version&#x27;</span>] ?? <span class="string">&#x27;&#x27;</span>;</span><br><span class="line">        <span class="variable">$nonce</span>     = <span class="variable">$header</span>[<span class="string">&#x27;X-Nonce&#x27;</span>] ?? <span class="string">&#x27;&#x27;</span>;</span><br><span class="line">        <span class="variable">$timestamp</span> = <span class="variable">$header</span>[<span class="string">&#x27;X-Timestamp&#x27;</span>] ?? <span class="number">0</span>;</span><br><span class="line">        <span class="variable">$signature</span> = <span class="variable">$header</span>[<span class="string">&#x27;X-Signature&#x27;</span>] ?? <span class="string">&#x27;&#x27;</span>;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 基础验证</span></span><br><span class="line">        <span class="keyword">if</span> (!<span class="variable">$appid</span> || !<span class="variable">$version</span> || !<span class="variable">$nonce</span> || !<span class="variable">$timestamp</span> || !<span class="variable">$signature</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> [<span class="string">&#x27;code&#x27;</span> =&gt; <span class="variable language_">$this</span>-&gt;error, <span class="string">&#x27;msg&#x27;</span> =&gt; <span class="string">&#x27;Missing authentication headers&#x27;</span>];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 应用ID有效性验证</span></span><br><span class="line">        <span class="keyword">if</span> (<span class="variable">$appid</span> !== <span class="variable language_">$this</span>-&gt;appId) &#123;</span><br><span class="line">            <span class="keyword">return</span> [<span class="string">&#x27;code&#x27;</span> =&gt; <span class="variable language_">$this</span>-&gt;error, <span class="string">&#x27;msg&#x27;</span> =&gt; <span class="string">&#x27;Invalid appid&#x27;</span>];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 时间有效性验证</span></span><br><span class="line">        <span class="keyword">if</span> (<span class="title function_ invoke__">time</span>() - <span class="variable">$timestamp</span> &gt; <span class="variable language_">$this</span>-&gt;expireTime) &#123;</span><br><span class="line">            <span class="keyword">return</span> [<span class="string">&#x27;code&#x27;</span> =&gt; <span class="variable language_">$this</span>-&gt;error, <span class="string">&#x27;msg&#x27;</span> =&gt; <span class="string">&#x27;Request expired&#x27;</span>];</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Nonce防重放</span></span><br><span class="line">        <span class="comment">// if (Cache::has(&#x27;api_nonce:&#x27;.$nonce)) &#123;</span></span><br><span class="line">        <span class="comment">//     throw new \Exception(&#x27;Duplicate request&#x27;, 401);</span></span><br><span class="line">        <span class="comment">// &#125;</span></span><br><span class="line">        <span class="comment">//Cache::set(&#x27;api_nonce:&#x27;.$nonce, 1, $this-&gt;expireTime);</span></span><br><span class="line"></span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">empty</span>(<span class="variable">$body</span>)) &#123;</span><br><span class="line">            <span class="variable">$body</span> = <span class="string">&quot;&#123;&#125;&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        <span class="comment">// 生成服务端签名</span></span><br><span class="line">        <span class="variable">$serverSign</span> = <span class="variable language_">$this</span>-&gt;<span class="title function_ invoke__">generateSign</span>([</span><br><span class="line">            <span class="string">&#x27;appid&#x27;</span>     =&gt; <span class="variable">$appid</span>,</span><br><span class="line">            <span class="string">&#x27;version&#x27;</span>   =&gt; <span class="variable">$version</span>,</span><br><span class="line">            <span class="string">&#x27;timestamp&#x27;</span> =&gt; <span class="variable">$timestamp</span>,</span><br><span class="line">            <span class="string">&#x27;nonce&#x27;</span>     =&gt; <span class="variable">$nonce</span>,</span><br><span class="line">            <span class="string">&#x27;body&#x27;</span>      =&gt; <span class="variable">$body</span> // 请求体</span><br><span class="line">        ]);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 签名比对</span></span><br><span class="line">        <span class="keyword">if</span> (!<span class="title function_ invoke__">hash_equals</span>(<span class="variable">$serverSign</span>, <span class="variable">$signature</span>)) &#123;</span><br><span class="line">            <span class="keyword">return</span> [<span class="string">&#x27;code&#x27;</span> =&gt; <span class="variable language_">$this</span>-&gt;error, <span class="string">&#x27;msg&#x27;</span> =&gt; <span class="string">&#x27;Invalid signature&#x27;</span>];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> [<span class="string">&#x27;code&#x27;</span> =&gt; <span class="variable language_">$this</span>-&gt;success, <span class="string">&#x27;msg&#x27;</span> =&gt; <span class="string">&#x27;success&#x27;</span>];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">function</span> <span class="title">generateSign</span>(<span class="params"><span class="keyword">array</span> <span class="variable">$params</span></span>): <span class="title">string</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">// 参数排序</span></span><br><span class="line">        <span class="title function_ invoke__">ksort</span>(<span class="variable">$params</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 拼接字符串</span></span><br><span class="line">        <span class="variable">$signStr</span> = <span class="string">&#x27;&#x27;</span>;</span><br><span class="line">        <span class="keyword">foreach</span> (<span class="variable">$params</span> <span class="keyword">as</span> <span class="variable">$key</span> =&gt; <span class="variable">$value</span>) &#123;</span><br><span class="line">            <span class="variable">$signStr</span> .= <span class="string">&quot;<span class="subst">&#123;$key&#125;</span>=<span class="subst">&#123;$value&#125;</span>&amp;&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="variable">$signStr</span> = <span class="title function_ invoke__">rtrim</span>(<span class="variable">$signStr</span>, <span class="string">&#x27;&amp;&#x27;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 使用HMAC-SHA256</span></span><br><span class="line">        <span class="keyword">return</span> <span class="title function_ invoke__">hash_hmac</span>(<span class="string">&#x27;sha256&#x27;</span>, <span class="variable">$signStr</span>, <span class="variable">$this</span>-&gt;secretKey);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2025/04/20/install_swoole_extension/" rel="prev" title="手动编译安装Swoole扩展">
+      <i class="fa fa-chevron-left"></i> 手动编译安装Swoole扩展
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2025/06/06/tp8_think_swoole_websock/" rel="next" title="ThinkPHP 8.1 + think-swoole 4.1 的 WebSocket 实时通信">
+      ThinkPHP 8.1 + think-swoole 4.1 的 WebSocket 实时通信 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E2%9C%A8-%E4%B8%80%E3%80%81%E4%BB%80%E4%B9%88%E6%98%AF-API-%E6%8E%A5%E5%8F%A3%E7%AD%BE%E5%90%8D%E9%AA%8C%E8%AF%81%EF%BC%9F"><span class="nav-number">1.</span> <span class="nav-text">✨ 一、什么是 API 接口签名验证？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%F0%9F%93%90-%E4%BA%8C%E3%80%81%E7%AD%BE%E5%90%8D%E5%8F%82%E6%95%B0%E8%AE%BE%E8%AE%A1"><span class="nav-number">2.</span> <span class="nav-text">📐 二、签名参数设计</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AD%BE%E5%90%8D%E7%94%9F%E6%88%90%E6%AD%A5%E9%AA%A4"><span class="nav-number">2.1.</span> <span class="nav-text">签名生成步骤</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AE%97%E6%B3%95%E7%A4%BA%E4%BE%8B"><span class="nav-number">2.2.</span> <span class="nav-text">算法示例</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%F0%9F%94%90-%E4%B8%89%E3%80%81%E4%BB%A3%E7%A0%81%E7%A4%BA%E4%BE%8B"><span class="nav-number">3.</span> <span class="nav-text">🔐 三、代码示例</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E7%AB%AF%E5%8A%A0%E7%AD%BE%E9%80%BB%E8%BE%91%EF%BC%88JavaScript%EF%BC%89"><span class="nav-number">3.1.</span> <span class="nav-text">前端加签逻辑（JavaScript）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8E%E7%AB%AF%E9%AA%8C%E7%AD%BE%E9%80%BB%E8%BE%91%EF%BC%88PHP%EF%BC%89"><span class="nav-number">3.2.</span> <span class="nav-text">后端验签逻辑（PHP）</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">wds</p>
+  <div class="site-description" itemprop="description">wds博客</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">4</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wds7788" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wds7788" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2024 – 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">wds</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="ThinkPHP 8.1 框架和 think-swoole 4.1 扩展，完整配置 WebSocket 服务端 + 客户端 HTML 页面 Demo">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ThinkPHP 8.1 + think-swoole 4.1 的 WebSocket 实时通信">
+<meta property="og:url" content="http://example.com/2025/06/06/tp8_think_swoole_websock/index.html">
+<meta property="og:site_name" content="wds">
+<meta property="og:description" content="ThinkPHP 8.1 框架和 think-swoole 4.1 扩展，完整配置 WebSocket 服务端 + 客户端 HTML 页面 Demo">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-06-06T15:49:18.000Z">
+<meta property="article:modified_time" content="2025-06-06T15:49:18.000Z">
+<meta property="article:author" content="wds">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2025/06/06/tp8_think_swoole_websock/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>ThinkPHP 8.1 + think-swoole 4.1 的 WebSocket 实时通信 | wds</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">wds</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">wds博客</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/wds7788" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2025/06/06/tp8_think_swoole_websock/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="wds">
+      <meta itemprop="description" content="wds博客">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="wds">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          ThinkPHP 8.1 + think-swoole 4.1 的 WebSocket 实时通信
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2025-06-06 23:49:18" itemprop="dateCreated datePublished" datetime="2025-06-06T23:49:18+08:00">2025-06-06</time>
+            </span>
+
+          
+            <div class="post-description">ThinkPHP 8.1 框架和 think-swoole 4.1 扩展，完整配置 WebSocket 服务端 + 客户端 HTML 页面 Demo</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <hr>
+<h1 id="🌐-使用-Swoole-开启-WebSocket-服务（含连接-消息-断开监听）"><a href="#🌐-使用-Swoole-开启-WebSocket-服务（含连接-消息-断开监听）" class="headerlink" title="🌐 使用 Swoole 开启 WebSocket 服务（含连接&#x2F;消息&#x2F;断开监听）"></a>🌐 使用 Swoole 开启 WebSocket 服务（含连接&#x2F;消息&#x2F;断开监听）</h1><p>本文将通过一个完整的示例，介绍如何基于 Swoole 和 ThinkPHP 8 配置 WebSocket 服务，包含服务启动、连接事件监听、消息处理、断开处理及前端示例，适合初学者快速上手。</p>
+<p>框架：thinkphp:8.1.1</p>
+<p>扩展：think-swoole:4.1</p>
+<hr>
+<h2 id="📦-一、Swoole-配置文件（支持-WebSocket）"><a href="#📦-一、Swoole-配置文件（支持-WebSocket）" class="headerlink" title="📦 一、Swoole 配置文件（支持 WebSocket）"></a>📦 一、Swoole 配置文件（支持 WebSocket）</h2><p>创建或修改你的 <code>config/swoole.php</code> 配置文件：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">return</span> [</span><br><span class="line">    <span class="string">&#x27;http&#x27;</span> =&gt; [</span><br><span class="line">        <span class="string">&#x27;enable&#x27;</span>     =&gt; <span class="literal">true</span>,</span><br><span class="line">        <span class="string">&#x27;host&#x27;</span>       =&gt; <span class="string">&#x27;0.0.0.0&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;port&#x27;</span>       =&gt; <span class="number">9501</span>, <span class="comment">// 修改为你的端口</span></span><br><span class="line">        <span class="string">&#x27;worker_num&#x27;</span> =&gt; <span class="title function_ invoke__">swoole_cpu_num</span>(),</span><br><span class="line">        <span class="string">&#x27;options&#x27;</span>    =&gt; [</span><br><span class="line">            <span class="string">&#x27;package_max_length&#x27;</span> =&gt; <span class="number">10</span> * <span class="number">1024</span> * <span class="number">1024</span>, <span class="comment">// 10MB</span></span><br><span class="line">            <span class="string">&#x27;max_request&#x27;</span>        =&gt; <span class="number">3000</span>,</span><br><span class="line">        ],</span><br><span class="line">    ],</span><br><span class="line"></span><br><span class="line">    <span class="string">&#x27;websocket&#x27;</span> =&gt; [</span><br><span class="line">        <span class="string">&#x27;enable&#x27;</span>        =&gt; <span class="literal">true</span>, <span class="comment">// 开启 WebSocket</span></span><br><span class="line">        <span class="string">&#x27;route&#x27;</span>         =&gt; <span class="literal">false</span>,</span><br><span class="line">        <span class="string">&#x27;handler&#x27;</span>       =&gt; \think\swoole\websocket<span class="title class_">\Handler</span>::<span class="variable language_">class</span>,</span><br><span class="line">        <span class="string">&#x27;ping_interval&#x27;</span> =&gt; <span class="number">25000</span>, <span class="comment">// 心跳间隔</span></span><br><span class="line">        <span class="string">&#x27;ping_timeout&#x27;</span>  =&gt; <span class="number">60000</span>, <span class="comment">// 超时时间</span></span><br><span class="line">        <span class="string">&#x27;room&#x27;</span> =&gt; [</span><br><span class="line">            <span class="string">&#x27;type&#x27;</span>  =&gt; <span class="string">&#x27;table&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;table&#x27;</span> =&gt; [</span><br><span class="line">                <span class="string">&#x27;room_rows&#x27;</span>   =&gt; <span class="number">8192</span>,</span><br><span class="line">                <span class="string">&#x27;room_size&#x27;</span>   =&gt; <span class="number">2048</span>,</span><br><span class="line">                <span class="string">&#x27;client_rows&#x27;</span> =&gt; <span class="number">4096</span>,</span><br><span class="line">                <span class="string">&#x27;client_size&#x27;</span> =&gt; <span class="number">2048</span>,</span><br><span class="line">            ],</span><br><span class="line">        ],</span><br><span class="line"></span><br><span class="line">        <span class="comment">// WebSocket 事件监听类</span></span><br><span class="line">        <span class="string">&#x27;listen&#x27;</span> =&gt; [</span><br><span class="line">            <span class="string">&#x27;open&#x27;</span>  =&gt; \app\webscoket<span class="title class_">\Connect</span>::<span class="variable language_">class</span>,</span><br><span class="line">            <span class="string">&#x27;event&#x27;</span> =&gt; \app\webscoket<span class="title class_">\Event</span>::<span class="variable language_">class</span>,</span><br><span class="line">            <span class="string">&#x27;close&#x27;</span> =&gt; \app\webscoket<span class="title class_">\Close</span>::<span class="variable language_">class</span>,</span><br><span class="line">        ],</span><br><span class="line"></span><br><span class="line">        <span class="string">&#x27;subscribe&#x27;</span> =&gt; [],</span><br><span class="line">    ],</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 其他服务配置（可按需启用）</span></span><br><span class="line">    <span class="string">&#x27;rpc&#x27;</span> =&gt; [</span><br><span class="line">        <span class="string">&#x27;server&#x27;</span> =&gt; [</span><br><span class="line">            <span class="string">&#x27;enable&#x27;</span>     =&gt; <span class="literal">false</span>,</span><br><span class="line">            <span class="string">&#x27;host&#x27;</span>       =&gt; <span class="string">&#x27;0.0.0.0&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;port&#x27;</span>       =&gt; <span class="number">9000</span>,</span><br><span class="line">            <span class="string">&#x27;worker_num&#x27;</span> =&gt; <span class="title function_ invoke__">swoole_cpu_num</span>(),</span><br><span class="line">            <span class="string">&#x27;services&#x27;</span>   =&gt; [],</span><br><span class="line">        ],</span><br><span class="line">        <span class="string">&#x27;client&#x27;</span> =&gt; [],</span><br><span class="line">    ],</span><br><span class="line"></span><br><span class="line">    <span class="string">&#x27;queue&#x27;</span> =&gt; [</span><br><span class="line">        <span class="string">&#x27;enable&#x27;</span>  =&gt; <span class="literal">false</span>,</span><br><span class="line">        <span class="string">&#x27;workers&#x27;</span> =&gt; [],</span><br><span class="line">    ],</span><br><span class="line"></span><br><span class="line">    <span class="string">&#x27;hot_update&#x27;</span> =&gt; [</span><br><span class="line">        <span class="string">&#x27;enable&#x27;</span>  =&gt; <span class="title function_ invoke__">env</span>(<span class="string">&#x27;APP_DEBUG&#x27;</span>, <span class="literal">false</span>),</span><br><span class="line">        <span class="string">&#x27;name&#x27;</span>    =&gt; [<span class="string">&#x27;*.php&#x27;</span>],</span><br><span class="line">        <span class="string">&#x27;include&#x27;</span> =&gt; [<span class="title function_ invoke__">app_path</span>()],</span><br><span class="line">        <span class="string">&#x27;exclude&#x27;</span> =&gt; [],</span><br><span class="line">    ],</span><br><span class="line"></span><br><span class="line">    <span class="string">&#x27;pool&#x27;</span> =&gt; [</span><br><span class="line">        <span class="string">&#x27;db&#x27;</span> =&gt; [</span><br><span class="line">            <span class="string">&#x27;enable&#x27;</span>        =&gt; <span class="literal">true</span>,</span><br><span class="line">            <span class="string">&#x27;max_active&#x27;</span>    =&gt; <span class="number">3</span>,</span><br><span class="line">            <span class="string">&#x27;max_wait_time&#x27;</span> =&gt; <span class="number">5</span>,</span><br><span class="line">        ],</span><br><span class="line">        <span class="string">&#x27;cache&#x27;</span> =&gt; [</span><br><span class="line">            <span class="string">&#x27;enable&#x27;</span>        =&gt; <span class="literal">true</span>,</span><br><span class="line">            <span class="string">&#x27;max_active&#x27;</span>    =&gt; <span class="number">3</span>,</span><br><span class="line">            <span class="string">&#x27;max_wait_time&#x27;</span> =&gt; <span class="number">5</span>,</span><br><span class="line">        ],</span><br><span class="line">    ],</span><br><span class="line"></span><br><span class="line">    <span class="string">&#x27;ipc&#x27;</span> =&gt; [</span><br><span class="line">        <span class="string">&#x27;type&#x27;</span> =&gt; <span class="string">&#x27;unix_socket&#x27;</span>,</span><br><span class="line">    ],</span><br><span class="line"></span><br><span class="line">    <span class="string">&#x27;lock&#x27;</span> =&gt; [</span><br><span class="line">        <span class="string">&#x27;enable&#x27;</span> =&gt; <span class="literal">false</span>,</span><br><span class="line">        <span class="string">&#x27;type&#x27;</span>   =&gt; <span class="string">&#x27;table&#x27;</span>,</span><br><span class="line">    ],</span><br><span class="line"></span><br><span class="line">    <span class="string">&#x27;tables&#x27;</span>    =&gt; [],</span><br><span class="line">    <span class="string">&#x27;concretes&#x27;</span> =&gt; [],</span><br><span class="line">    <span class="string">&#x27;resetters&#x27;</span> =&gt; [],</span><br><span class="line">    <span class="string">&#x27;instances&#x27;</span> =&gt; [],</span><br><span class="line">    <span class="string">&#x27;services&#x27;</span>  =&gt; [],</span><br><span class="line">];</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🧩-二、WebSocket-事件监听类"><a href="#🧩-二、WebSocket-事件监听类" class="headerlink" title="🧩 二、WebSocket 事件监听类"></a>🧩 二、WebSocket 事件监听类</h2><p>在 <code>app/webscoket/</code> 目录下新建以下三个类，分别对应连接、消息、断开三个事件。</p>
+<h3 id="1-Connect-php-—-连接事件"><a href="#1-Connect-php-—-连接事件" class="headerlink" title="1. Connect.php — 连接事件"></a>1. <code>Connect.php</code> — 连接事件</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title class_">app</span>\<span class="title class_">webscoket</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">think</span>\<span class="title">swoole</span>\<span class="title">Websocket</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Connect</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$websocket</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="variable language_">$this</span>-&gt;websocket = <span class="title function_ invoke__">app</span>(<span class="title class_">Websocket</span>::<span class="variable language_">class</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">handle</span>(<span class="params"><span class="variable">$event</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="variable">$fd</span> = <span class="variable language_">$this</span>-&gt;websocket-&gt;<span class="title function_ invoke__">getSender</span>();</span><br><span class="line">        <span class="variable language_">$this</span>-&gt;websocket-&gt;<span class="title function_ invoke__">push</span>(<span class="title function_ invoke__">json_encode</span>([</span><br><span class="line">            <span class="string">&#x27;type&#x27;</span> =&gt; <span class="string">&#x27;xdebug&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;data&#x27;</span> =&gt; <span class="string">&quot;client <span class="subst">&#123;$fd&#125;</span> Connect&quot;</span>,</span><br><span class="line">            <span class="string">&#x27;time&#x27;</span> =&gt; <span class="title function_ invoke__">time</span>()</span><br><span class="line">        ]));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="2-Event-php-—-消息事件"><a href="#2-Event-php-—-消息事件" class="headerlink" title="2. Event.php — 消息事件"></a>2. <code>Event.php</code> — 消息事件</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title class_">app</span>\<span class="title class_">webscoket</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">think</span>\<span class="title">swoole</span>\<span class="title">Websocket</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Event</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$websocket</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="variable language_">$this</span>-&gt;websocket = <span class="title function_ invoke__">app</span>(<span class="title class_">Websocket</span>::<span class="variable language_">class</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">handle</span>(<span class="params"><span class="variable">$event</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="variable">$fd</span> = <span class="variable language_">$this</span>-&gt;websocket-&gt;<span class="title function_ invoke__">getSender</span>();</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">&quot;client <span class="subst">&#123;$fd&#125;</span> Event\n&quot;</span>;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">&#x27;接收到事件: &#x27;</span> . <span class="variable">$event</span>-&gt;type . <span class="string">&#x27; --- &#x27;</span> . <span class="variable">$event</span>-&gt;data . <span class="string">&quot;\n&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="3-Close-php-—-断开事件"><a href="#3-Close-php-—-断开事件" class="headerlink" title="3. Close.php — 断开事件"></a>3. <code>Close.php</code> — 断开事件</h3><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title class_">app</span>\<span class="title class_">webscoket</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">think</span>\<span class="title">swoole</span>\<span class="title">Websocket</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Close</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> <span class="variable">$websocket</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="variable language_">$this</span>-&gt;websocket = <span class="title function_ invoke__">app</span>(<span class="title class_">Websocket</span>::<span class="variable language_">class</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">handle</span>(<span class="params"><span class="variable">$event</span></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="variable">$fd</span> = <span class="variable language_">$this</span>-&gt;websocket-&gt;<span class="title function_ invoke__">getSender</span>();</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">&quot;client <span class="subst">&#123;$fd&#125;</span> Close\n&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🖥️-三、前端-HTML-测试页面"><a href="#🖥️-三、前端-HTML-测试页面" class="headerlink" title="🖥️ 三、前端 HTML 测试页面"></a>🖥️ 三、前端 HTML 测试页面</h2><p>新建一个 HTML 文件用于调试 WebSocket 通信：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">title</span>&gt;</span>websocket<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"> </span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">h1</span>&gt;</span>websocket功能<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line"> </span><br><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">id</span>=<span class="string">&quot;msg&quot;</span> <span class="attr">type</span>=<span class="string">&quot;text&quot;</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">button</span> <span class="attr">onclick</span>=<span class="string">&quot;send()&quot;</span>&gt;</span>发送<span class="tag">&lt;/<span class="name">button</span>&gt;</span></span><br><span class="line"> </span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">    <span class="comment">// wss://echo.websocket.org 公共测试服务器</span></span></span><br><span class="line"><span class="language-javascript">    <span class="keyword">var</span> ws = <span class="keyword">new</span> <span class="title class_">WebSocket</span>(<span class="string">&quot;ws://你的ip地址:9501&quot;</span>);</span></span><br><span class="line"><span class="language-javascript"> </span></span><br><span class="line"><span class="language-javascript">    ws.<span class="property">onopen</span> = <span class="keyword">function</span> (<span class="params"></span>)&#123;</span></span><br><span class="line"><span class="language-javascript">        <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;连接成功&quot;</span>);</span></span><br><span class="line"><span class="language-javascript">        <span class="keyword">var</span> sendObj = &#123;&#125;;</span></span><br><span class="line"><span class="language-javascript">        sendObj.<span class="property">type</span> = <span class="string">&#x27;connect&#x27;</span>;</span></span><br><span class="line"><span class="language-javascript">        sendObj.<span class="property">data</span> = <span class="string">&#x27;connect success&#x27;</span>;</span></span><br><span class="line"><span class="language-javascript">        <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;msg&#x27;</span>,<span class="title class_">JSON</span>.<span class="title function_">stringify</span>(sendObj));</span></span><br><span class="line"><span class="language-javascript">        ws.<span class="title function_">send</span>(<span class="title class_">JSON</span>.<span class="title function_">stringify</span>(sendObj));</span></span><br><span class="line"><span class="language-javascript">    &#125;</span></span><br><span class="line"><span class="language-javascript">    </span></span><br><span class="line"><span class="language-javascript">    ws.<span class="property">onclose</span> = <span class="keyword">function</span> (<span class="params"></span>) &#123;</span></span><br><span class="line"><span class="language-javascript">        <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;连接失败&quot;</span>)</span></span><br><span class="line"><span class="language-javascript">    &#125;</span></span><br><span class="line"><span class="language-javascript"> </span></span><br><span class="line"><span class="language-javascript">    ws.<span class="property">onmessage</span> = <span class="keyword">function</span> (<span class="params">evt</span>) &#123;</span></span><br><span class="line"><span class="language-javascript">        <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;数据已接收&quot;</span>,evt);</span></span><br><span class="line"><span class="language-javascript">    &#125;</span></span><br><span class="line"><span class="language-javascript"> </span></span><br><span class="line"><span class="language-javascript">    <span class="keyword">function</span> <span class="title function_">send</span>(<span class="params"></span>)&#123;</span></span><br><span class="line"><span class="language-javascript">        <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;运行到这里了&#x27;</span>);</span></span><br><span class="line"><span class="language-javascript">        <span class="keyword">var</span> msg = <span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">&#x27;msg&#x27;</span>).<span class="property">value</span>;</span></span><br><span class="line"><span class="language-javascript">        <span class="keyword">var</span> sendObj = &#123;&#125;;</span></span><br><span class="line"><span class="language-javascript">        sendObj.<span class="property">type</span> = <span class="string">&#x27;mtest&#x27;</span>;</span></span><br><span class="line"><span class="language-javascript">        sendObj.<span class="property">data</span> = msg;</span></span><br><span class="line"><span class="language-javascript"> </span></span><br><span class="line"><span class="language-javascript">        <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;msg&#x27;</span>,<span class="title class_">JSON</span>.<span class="title function_">stringify</span>(sendObj));</span></span><br><span class="line"><span class="language-javascript">        ws.<span class="title function_">send</span>(<span class="title class_">JSON</span>.<span class="title function_">stringify</span>(sendObj));</span></span><br><span class="line"><span class="language-javascript">    &#125;</span></span><br><span class="line"><span class="language-javascript"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🔗-参考资料"><a href="#🔗-参考资料" class="headerlink" title="🔗 参考资料"></a>🔗 参考资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/quweiie/article/details/146481115">ThinkPHP + Swoole WebSocket 配置教程（CSDN）</a></li>
+<li><a target="_blank" rel="noopener" href="https://wiki.swoole.com/zh-cn/#/websocket_server?id=open_websocket_ping_frame">Swoole 官方文档：WebSocket</a></li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/142404854">知乎：ThinkPHP + Swoole WebSocket 使用方法</a></li>
+</ul>
+<hr>
+<h2 id="✅-总结"><a href="#✅-总结" class="headerlink" title="✅ 总结"></a>✅ 总结</h2><p>通过本文，你可以快速搭建一个基于 Swoole 的 WebSocket 服务，完成连接、消息接收、断开监听等基础功能。结合 ThinkPHP 的事件机制，让 WebSocket 集成更清晰、更易扩展。</p>
+<p>如果你想继续深入，可以加入用户身份绑定、Redis 聊天室中转、消息广播等高级功能。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2025/05/24/API_interface_signature/" rel="prev" title="API 接口签名验证机制">
+      <i class="fa fa-chevron-left"></i> API 接口签名验证机制
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%F0%9F%8C%90-%E4%BD%BF%E7%94%A8-Swoole-%E5%BC%80%E5%90%AF-WebSocket-%E6%9C%8D%E5%8A%A1%EF%BC%88%E5%90%AB%E8%BF%9E%E6%8E%A5-%E6%B6%88%E6%81%AF-%E6%96%AD%E5%BC%80%E7%9B%91%E5%90%AC%EF%BC%89"><span class="nav-number">1.</span> <span class="nav-text">🌐 使用 Swoole 开启 WebSocket 服务（含连接&#x2F;消息&#x2F;断开监听）</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%F0%9F%93%A6-%E4%B8%80%E3%80%81Swoole-%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%EF%BC%88%E6%94%AF%E6%8C%81-WebSocket%EF%BC%89"><span class="nav-number">1.1.</span> <span class="nav-text">📦 一、Swoole 配置文件（支持 WebSocket）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%F0%9F%A7%A9-%E4%BA%8C%E3%80%81WebSocket-%E4%BA%8B%E4%BB%B6%E7%9B%91%E5%90%AC%E7%B1%BB"><span class="nav-number">1.2.</span> <span class="nav-text">🧩 二、WebSocket 事件监听类</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-Connect-php-%E2%80%94-%E8%BF%9E%E6%8E%A5%E4%BA%8B%E4%BB%B6"><span class="nav-number">1.2.1.</span> <span class="nav-text">1. Connect.php — 连接事件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-Event-php-%E2%80%94-%E6%B6%88%E6%81%AF%E4%BA%8B%E4%BB%B6"><span class="nav-number">1.2.2.</span> <span class="nav-text">2. Event.php — 消息事件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-Close-php-%E2%80%94-%E6%96%AD%E5%BC%80%E4%BA%8B%E4%BB%B6"><span class="nav-number">1.2.3.</span> <span class="nav-text">3. Close.php — 断开事件</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%F0%9F%96%A5%EF%B8%8F-%E4%B8%89%E3%80%81%E5%89%8D%E7%AB%AF-HTML-%E6%B5%8B%E8%AF%95%E9%A1%B5%E9%9D%A2"><span class="nav-number">1.3.</span> <span class="nav-text">🖥️ 三、前端 HTML 测试页面</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%F0%9F%94%97-%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">1.4.</span> <span class="nav-text">🔗 参考资料</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E2%9C%85-%E6%80%BB%E7%BB%93"><span class="nav-number">1.5.</span> <span class="nav-text">✅ 总结</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">wds</p>
+  <div class="site-description" itemprop="description">wds博客</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">4</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wds7788" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wds7788" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2024 – 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">wds</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
